@@ -15,12 +15,25 @@
     "payload"
   ],
   "properties": {
-    "id": { "type": "string", "minLength": 1 },
-    "schemaVersion": { "type": "string", "const": "1.0.0" },
-    "eventVersion": { "type": "integer", "minimum": 1 },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "eventVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
     "source": {
       "type": "string",
-      "enum": ["mission-control", "self-healing-systems", "immaculate-vibes"]
+      "enum": [
+        "mission-control",
+        "self-healing-systems",
+        "immaculate-vibes"
+      ]
     },
     "type": {
       "type": "string",
@@ -39,12 +52,27 @@
     },
     "severity": {
       "type": "string",
-      "enum": ["info", "warn", "critical"]
+      "enum": [
+        "info",
+        "warn",
+        "critical"
+      ]
     },
-    "timestamp": { "type": "string", "format": "date-time" },
-    "correlationId": { "type": "string", "minLength": 1 },
-    "agentId": { "type": "string" },
-    "payload": { "type": "object" }
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "agentId": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true
+    }
   },
   "additionalProperties": true
 }
