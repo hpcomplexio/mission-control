@@ -1,103 +1,78 @@
-# MISSION CONTROL — POC Scaffold
+# Mission Control
 
-A command center for a solo CEO running an AI agent army.
+Control plane and dashboard for tri-repo agent orchestration:
+- `mission-control` (dashboard + hub)
+- `immaculate-vibes` (workspace repo)
+- `self-healing-systems` (healer service)
 
-## Setup
+## Current Status (Round 1 Complete)
+
+Completed in this repo:
+- Hub server implemented in `server/src` with:
+- `POST /spawn`
+- `GET /events` (SSE + heartbeat + replay support)
+- `POST /events` (idempotency key handling)
+- `GET /agents`
+- `POST /inject`
+- `POST /decisions/:id/resolve`
+- Shared event schema and API contract in `server/contracts/`.
+- Contract fixtures and schema validation test templates in `tests/contracts/`.
+- Tri-service local orchestration in `docker-compose.dev.yml`:
+- `dashboard` on `3000`
+- `agent-server` on `8787`
+- `healer` on `8000`
+
+Validated gates:
+- Hub event ingest works.
+- Idempotency works (`deduped: true` on duplicate key).
+- SSE stream works and emits live events.
+- Healer callbacks to hub work with auth.
+- Known failure path reaches `heal.completed`.
+- Unknown failure path reaches `heal.escalated`.
+
+## Local Run
 
 ```bash
-npm install
-npm run dev
-# → http://localhost:3000
+docker compose -f docker-compose.dev.yml up --build -d
+docker compose -f docker-compose.dev.yml ps
 ```
 
-## Project Structure
+Dashboard:
+- `http://localhost:3000`
 
-```
-src/
-  App.jsx                  # Root layout, global state, panel routing
-  components/
-    FleetView.jsx          # Agent cards, status, logs, blockers
-    Interview.jsx          # Agent-led interview to build mission brief
-    MissionBrief.jsx       # Display compiled mission context
-    DecisionInbox.jsx      # Human-in-the-loop decision queue
-  data/
-    mockData.js            # Mock agents, mission state, interview questions
-  index.css                # Global styles, animations, theme vars
-```
+Hub:
+- `http://localhost:8787`
 
-## Current State (Mock)
+Healer:
+- `http://localhost:8000`
 
-All agent data is simulated in `mockData.js`. The UI is fully functional with:
-- Live agent fleet view with status, progress, logs
-- Typing interview flow that compiles a mission brief
-- Decision inbox with respond/resolve flow
-- "Inject Event" button to simulate chaos (blockers, proposals)
-- Reset button to start fresh
+Shutdown:
 
-## Next: Wire Up Real Agents
-
-To connect a real Claude Code agent:
-
-1. **Spawn agent via API** — use `@anthropic-ai/claude-code` SDK or CLI
-2. **Stream output** — pipe stdout to a small Express/Fastify server
-3. **Serve events** — use SSE or WebSocket to push to the dashboard
-4. **Replace mock data** — swap `initialAgents` in `mockData.js` with live state
-
-### Example agent server stub (Node)
-
-```js
-// server/index.js
-import { ClaudeCode } from '@anthropic-ai/claude-code'
-import express from 'express'
-
-const app = express()
-const agents = new Map()
-
-app.post('/spawn', async (req, res) => {
-  const { task, repoPath } = req.body
-  const agent = new ClaudeCode({ task, cwd: repoPath })
-  agents.set(agent.id, agent)
-  agent.run() // non-blocking
-  res.json({ agentId: agent.id })
-})
-
-app.get('/events', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream')
-  // push agent state changes to dashboard
-})
-
-app.listen(3001)
+```bash
+docker compose -f docker-compose.dev.yml down
 ```
 
-## The Two-Track System
+## Contract Test
 
-**Track 1** — the project your agents are building (set during interview)  
-**Track 2** — this dashboard itself (agents propose + build improvements)
-
-Agents work on Track 1, surface observations, and occasionally propose dashboard features.
-You approve in the Decision Inbox. Another agent builds it here.
-
-## Adding a Real Lever
-
-The "Inject Event" button in FleetView is currently mock.
-To make it real, wire it to your agent server:
-
-```js
-// In FleetView.jsx, replace onInjectChaos with:
-const handleRealChaos = async () => {
-  await fetch('http://localhost:3001/inject', {
-    method: 'POST',
-    body: JSON.stringify({ type: 'force_checkin', agentId: 'agent-001' })
-  })
-}
+```bash
+node --test tests/contracts/event_schema.contract.test.mjs
 ```
 
-## What Agents Can Add
+## What Is Left For "Fully Done"
 
-When an agent surfaces a proposal (via Decision Inbox), it should:
-1. Describe the problem it encountered
-2. Propose a specific UI component or data view
-3. Implement it in `src/components/` if approved
-4. Submit as a PR / commit to this repo
+- Run full spawn-to-commit flow against real `immaculate-vibes` tasks.
+- Verify decision inbox unblock loop end-to-end with a real paused agent.
+- Add scripted E2E checks (not just manual curl validation).
+- Add CI gates for contract/API/integration tests.
+- Harden observability:
+- structured logs for correlation IDs
+- clear error surfacing in dashboard for failed heals/retries
+- Document operator runbook for recovery and rollback flows.
 
-The dashboard evolves based on what agents actually need.
+## Important Paths
+
+- `server/contracts/event-schema.json`
+- `server/contracts/api-contract.md`
+- `server/src/`
+- `tests/contracts/`
+- `docker-compose.dev.yml`
