@@ -1,0 +1,13 @@
+{
+  "id": "018f8f77-6f52-7cc0-9a5b-2b0a4f9d5cb7",
+  "schemaVersion": "1.0.0",
+  "eventVersion": 1,
+  "source": "mission-control",
+  "type": "agent.spawned",
+  "severity": "info",
+  "timestamp": "2026-02-26T10:00:00.000Z",
+  "correlationId": "018f8f77-7f52-7cc0-9a5b-2b0a4f9d5cb8",
+  "payload": {
+    "task": "Run contract baseline"
+  }
+}
