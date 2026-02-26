@@ -1,4 +1,5 @@
-const API_BASE = (import.meta.env.VITE_CONTROL_PLANE_URL || '').replace(/\/$/, '')
+const API_BASE = (import.meta.env.VITE_CONTROL_PLANE_URL || '/api').replace(/\/$/, '')
+const CONTROL_PLANE_TOKEN = import.meta.env.VITE_MISSION_CONTROL_TOKEN || 'dev-token'
 
 const RETRY_DELAYS_MS = [500, 1000, 2000, 5000]
 
@@ -7,12 +8,17 @@ function buildUrl(path) {
 }
 
 async function request(path, options = {}) {
+  const method = String(options.method || 'GET').toUpperCase()
+  const isMutating = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
+
   const response = await fetch(buildUrl(path), {
     headers: {
       Accept: 'application/json',
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(isMutating ? { Authorization: `Bearer ${CONTROL_PLANE_TOKEN}` } : {}),
       ...options.headers,
     },
+    method,
     ...options,
   })
 
@@ -40,6 +46,13 @@ export async function fetchPendingDecisions() {
 
 export function resolveDecision(decisionId, payload) {
   return request(`/decisions/${decisionId}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function spawnAgent(payload) {
+  return request('/spawn', {
     method: 'POST',
     body: JSON.stringify(payload),
   })

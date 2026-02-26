@@ -202,6 +202,36 @@ export class ControlPlaneDb {
     );
   }
 
+  listDecisions({ status } = {}) {
+    const hasStatusFilter = typeof status === 'string' && status.length > 0;
+    const sql = hasStatusFilter
+      ? `SELECT id, correlation_id, agent_id, status, reason_code, resolution, actor, notes, payload_json, created_at, updated_at, resolved_at
+         FROM decisions
+         WHERE status = ?
+         ORDER BY created_at DESC`
+      : `SELECT id, correlation_id, agent_id, status, reason_code, resolution, actor, notes, payload_json, created_at, updated_at, resolved_at
+         FROM decisions
+         ORDER BY created_at DESC`;
+
+    const stmt = this.db.prepare(sql);
+    const rows = hasStatusFilter ? stmt.all(status) : stmt.all();
+
+    return rows.map((row) => ({
+      id: row.id,
+      correlationId: row.correlation_id,
+      agentId: row.agent_id,
+      status: row.status,
+      reasonCode: row.reason_code,
+      resolution: row.resolution,
+      actor: row.actor,
+      notes: row.notes,
+      payload: JSON.parse(row.payload_json),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      resolvedAt: row.resolved_at
+    }));
+  }
+
   resolveDecision(id, resolution, actor, notes) {
     const now = Date.now();
     const stmt = this.db.prepare(`

@@ -10,6 +10,10 @@ services:
       - "3000:3000"
     depends_on:
       - agent-server
+    environment:
+      VITE_API_PROXY_TARGET: "http://agent-server:8787"
+      VITE_MISSION_CONTROL_TOKEN: "dev-token"
+      VITE_DEFAULT_REPO_PATH: "/workspace"
 
   agent-server:
     image: node:22
