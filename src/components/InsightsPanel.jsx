@@ -48,15 +48,17 @@ function InsightCard({ insight, onAct, onDismiss }) {
             <div className="mt-2 animate-fadeIn">
               <p className="text-xs text-muted/80 leading-relaxed">{insight.detail}</p>
               <div className="mt-3 flex items-center gap-2">
-                <button
-                  onClick={() => onAct(insight)}
-                  className="text-xs font-bold px-3 py-1.5 rounded border transition-colors"
-                  style={{ color: cfg.color, borderColor: cfg.color + '55' }}
-                  onMouseEnter={e => e.currentTarget.style.background = cfg.color + '15'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >
-                  {insight.action} →
-                </button>
+                {insight.action && onAct && (
+                  <button
+                    onClick={() => onAct(insight)}
+                    className="text-xs font-bold px-3 py-1.5 rounded border transition-colors"
+                    style={{ color: cfg.color, borderColor: cfg.color + '55' }}
+                    onMouseEnter={e => e.currentTarget.style.background = cfg.color + '15'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    {insight.action} →
+                  </button>
+                )}
                 <button
                   onClick={() => onDismiss(insight.id)}
                   className="text-xs text-muted border border-border px-3 py-1.5 rounded hover:border-muted transition-colors"
