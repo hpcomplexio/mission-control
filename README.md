@@ -51,6 +51,38 @@ docker compose -f docker-compose.dev.yml ps
 docker compose -f docker-compose.dev.yml down
 ```
 
+## Parallel UI Workflow (Codex Desktop)
+
+Use one branch + one worktree + one thread per task.
+
+Recommended task branches:
+- `codex/decisions-read`
+- `codex/ui-spawn`
+- `codex/dev-proxy`
+- `codex/ui-auth-consistency`
+- `codex/smoke-runbook`
+- `codex/final-integration` (merge and validation only; run last)
+
+Suggested execution model:
+1. Create/switch each task branch from `main`.
+2. Open a separate worktree/thread for each task branch.
+3. Run task agents in parallel for the first five branches.
+4. Run the final integration branch after all five complete.
+
+Conflict expectation:
+- `src/lib/controlPlane.js` and `src/App.jsx` are expected merge hotspots.
+- Resolve conflicts by preserving all required outcomes (spawn wiring, proxy paths, auth headers, decisions list).
+
+## Context Safety (When Threads Get Long)
+
+Require each task thread to end with:
+1. Files changed
+2. Commands run
+3. Test/smoke outputs
+4. Open risks
+
+Keep a short integration note in this repo root for each completed task branch so final merge does not depend on chat memory.
+
 ## Contract Test
 
 ```bash
