@@ -1,0 +1,48 @@
+services:
+  dashboard:
+    image: node:22
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3000"
+    volumes:
+      - ./:/app
+      - dashboard_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - agent-server
+
+  agent-server:
+    image: node:22
+    working_dir: /app
+    command: sh -c "npm install && node server/src/index.js"
+    volumes:
+      - ./:/app
+      - agent_server_node_modules:/app/node_modules
+      - ./server/data:/Users/haleyparks/Documents/mission-control/server/data
+      - ../immaculate-vibes:/workspace
+    environment:
+      MISSION_CONTROL_PORT: "8787"
+      MISSION_CONTROL_TOKEN: "dev-token"
+      SELF_HEALER_TOKEN: "dev-token"
+      SELF_HEALER_URL: "http://healer:8000/heal"
+      MISSION_CONTROL_DB_PATH: "/Users/haleyparks/Documents/mission-control/server/data/controlplane.db"
+      MISSION_CONTROL_EVENT_SCHEMA_PATH: "/app/server/contracts/event-schema.json"
+    ports:
+      - "8787:8787"
+    depends_on:
+      - healer
+
+  healer:
+    build:
+      context: ../self-healing-systems
+      dockerfile: Dockerfile
+    environment:
+      SELF_HEALER_TOKEN: "dev-token"
+      MISSION_CONTROL_TOKEN: "dev-token"
+      MISSION_CONTROL_URL: "http://agent-server:8787"
+    ports:
+      - "8000:8000"
+
+volumes:
+  dashboard_node_modules:
+  agent_server_node_modules:
