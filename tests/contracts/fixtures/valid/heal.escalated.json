@@ -1,0 +1,17 @@
+{
+  "id": "018f35a4-c6d2-7cb8-af5a-0a00f329c003",
+  "schemaVersion": "1.0.0",
+  "eventVersion": 1,
+  "source": "self-healing-systems",
+  "type": "heal.escalated",
+  "severity": "warn",
+  "timestamp": "2026-02-26T18:01:00Z",
+  "correlationId": "018f35a4-c6d2-7cb8-af5a-0a00f329c002",
+  "payload": {
+    "reasonCode": "unknown_failure_signature",
+    "humanContext": {
+      "summary": "Could not classify failing output.",
+      "candidateFiles": ["app/logic.py"]
+    }
+  }
+}
