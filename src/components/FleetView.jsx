@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, GitCommit, AlertTriangle, Zap, RefreshCw, Clock } from 'lucide-react'
+import { ChevronDown, ChevronRight, GitCommit, AlertTriangle, Clock } from 'lucide-react'
 
 const statusConfig = {
-  active:   { label: 'ACTIVE',   dot: 'bg-green-400 animate-pulse',  text: 'text-green-400' },
-  blocked:  { label: 'BLOCKED',  dot: 'bg-warn animate-pulse-slow',  text: 'text-warn' },
-  idle:     { label: 'IDLE',     dot: 'bg-muted',                    text: 'text-muted' },
-  thinking: { label: 'SCANNING', dot: 'bg-blue-400 animate-pulse',   text: 'text-blue-400' },
+  active: { label: 'ACTIVE', dot: 'bg-green-400 animate-pulse', text: 'text-green-400' },
+  blocked: { label: 'BLOCKED', dot: 'bg-warn animate-pulse-slow', text: 'text-warn' },
+  idle: { label: 'IDLE', dot: 'bg-muted', text: 'text-muted' },
+  thinking: { label: 'SCANNING', dot: 'bg-blue-400 animate-pulse', text: 'text-blue-400' },
 }
 
-function AgentCard({ agent, onResolveBlocker, accentColor, isCTO }) {
+function AgentCard({ agent, accentColor, isCTO, onOpenInbox }) {
   const [expanded, setExpanded] = useState(false)
   const cfg = statusConfig[agent.status] || statusConfig.idle
 
@@ -47,17 +47,17 @@ function AgentCard({ agent, onResolveBlocker, accentColor, isCTO }) {
 
       {agent.blockers?.length > 0 && (
         <div className="mt-3 p-2 rounded border border-warn/30 bg-warn/5">
-          {agent.blockers.map((b, i) => (
-            <div key={i} className="flex items-start gap-2">
+          {agent.blockers.map((blocker, index) => (
+            <div key={index} className="flex items-start gap-2">
               <AlertTriangle size={12} className="text-warn flex-shrink-0 mt-0.5" />
-              <span className="text-xs text-warn/80">{b}</span>
+              <span className="text-xs text-warn/80">{blocker}</span>
             </div>
           ))}
           <button
-            onClick={() => onResolveBlocker(agent.id)}
+            onClick={onOpenInbox}
             className="mt-2 text-xs text-warn border border-warn/40 px-2 py-0.5 rounded hover:bg-warn/10 transition-colors"
           >
-            RESPOND →
+            VIEW DECISION INBOX
           </button>
         </div>
       )}
@@ -76,8 +76,8 @@ function AgentCard({ agent, onResolveBlocker, accentColor, isCTO }) {
 
       {expanded && (
         <div className="mt-2 space-y-1 border-l-2 border-border pl-3">
-          {agent.log.map((line, i) => (
-            <p key={i} className="text-xs text-muted font-mono">{line}</p>
+          {agent.log.map((line, index) => (
+            <p key={index} className="text-xs text-muted font-mono">{line}</p>
           ))}
           {(agent.status === 'active' || agent.status === 'thinking') && (
             <p className="text-xs font-mono cursor" style={{ color: accentColor }}>working</p>
@@ -88,15 +88,15 @@ function AgentCard({ agent, onResolveBlocker, accentColor, isCTO }) {
   )
 }
 
-export default function FleetView({ agents, onResolveBlocker, onInjectChaos, modeConfig }) {
+export default function FleetView({ agents, modeConfig, onOpenInbox }) {
   const isCTO = modeConfig?.id === 'cto'
   const accentColor = modeConfig?.accentColor || '#00ff88'
 
   const counts = {
-    active: agents.filter(a => a.status === 'active').length,
-    blocked: agents.filter(a => a.status === 'blocked').length,
-    thinking: agents.filter(a => a.status === 'thinking').length,
-    idle: agents.filter(a => a.status === 'idle').length,
+    active: agents.filter((agent) => agent.status === 'active').length,
+    blocked: agents.filter((agent) => agent.status === 'blocked').length,
+    thinking: agents.filter((agent) => agent.status === 'thinking').length,
+    idle: agents.filter((agent) => agent.status === 'idle').length,
   }
 
   return (
@@ -113,26 +113,16 @@ export default function FleetView({ agents, onResolveBlocker, onInjectChaos, mod
             {counts.idle > 0 && <span className="text-muted">{counts.idle} idle</span>}
           </div>
         </div>
-        <button
-          onClick={onInjectChaos}
-          className="flex items-center gap-2 text-xs border px-3 py-1.5 rounded transition-colors"
-          style={{ color: accentColor, borderColor: accentColor + '44' }}
-          onMouseEnter={e => e.currentTarget.style.background = accentColor + '11'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          {isCTO ? <RefreshCw size={12} /> : <Zap size={12} />}
-          {modeConfig?.injectLabel || 'INJECT EVENT'}
-        </button>
       </div>
 
       <div className="space-y-3">
-        {agents.map(agent => (
+        {agents.map((agent) => (
           <AgentCard
             key={agent.id}
             agent={agent}
-            onResolveBlocker={onResolveBlocker}
             accentColor={accentColor}
             isCTO={isCTO}
+            onOpenInbox={onOpenInbox}
           />
         ))}
       </div>
