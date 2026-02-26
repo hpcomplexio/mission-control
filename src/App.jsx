@@ -7,7 +7,7 @@ import MissionBrief from './components/MissionBrief'
 import DecisionInbox from './components/DecisionInbox'
 import InsightsPanel from './components/InsightsPanel'
 import { MODES, MODE_CONFIG } from './config/modes'
-import { fetchAgents, fetchPendingDecisions, resolveDecision, subscribeToEvents } from './lib/controlPlane'
+import { fetchAgents, fetchPendingDecisions, resolveDecision, spawnAgent, subscribeToEvents } from './lib/controlPlane'
 import './index.css'
 
 const LAST_EVENT_STORAGE_KEY = 'mission-control:last-event-id'
@@ -130,6 +130,27 @@ function eventToInsight(event) {
     action: event.type === 'decision.required' ? 'Open inbox' : null,
     timestamp: new Date(event.timestamp || Date.now()).toLocaleTimeString(),
     status: 'pending',
+  }
+}
+
+function buildSpawnPayload(modeConfig, missionData) {
+  const objective = missionData?.objective || missionData?.title || 'Mission execution'
+  const repoPath = import.meta.env.VITE_DEFAULT_REPO_PATH || '/workspace'
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const branchLabel = modeConfig?.id || 'mission'
+  const task = `${modeConfig?.label || 'Mission'}: ${objective}`
+
+  return {
+    task,
+    repoPath,
+    branch: `codex/${branchLabel}-${timestamp}`,
+    metadata: {
+      mode: modeConfig?.id || 'unknown',
+      missionTitle: missionData?.title || null,
+      constraints: missionData?.constraints || [],
+      successMetrics: missionData?.successMetrics || [],
+      autonomyLevel: missionData?.autonomyLevel || null,
+    },
   }
 }
 
@@ -299,9 +320,40 @@ export default function App() {
     setActivePanel(cfg.primaryPanel === 'insights' ? 'interview' : 'interview')
   }
 
-  const handleMissionComplete = (missionData) => {
+  const handleMissionComplete = async (missionData) => {
     setMission(missionData)
     setActivePanel(modeConfig.primaryPanel)
+
+    try {
+      const spawnPayload = buildSpawnPayload(modeConfig, missionData)
+      const spawned = await spawnAgent(spawnPayload)
+
+      if (spawned?.agentId) {
+        setAgents((prev) => {
+          if (prev.some((agent) => agent.id === spawned.agentId)) {
+            return prev
+          }
+
+          return [normalizeAgent({
+            id: spawned.agentId,
+            status: 'running',
+            task: spawnPayload.task,
+            startedAt: new Date().toISOString(),
+          }), ...prev]
+        })
+      }
+    } catch {
+      setInsights((prev) => [{
+        id: `insight-spawn-${Date.now()}`,
+        severity: 'critical',
+        source: 'spawn',
+        title: 'Spawn request failed',
+        detail: 'Mission saved, but POST /spawn failed. Check auth/proxy configuration.',
+        action: null,
+        timestamp: new Date().toLocaleTimeString(),
+        status: 'pending',
+      }, ...prev].slice(0, 50))
+    }
   }
 
   const handleDecisionResponse = async (decisionId, response) => {

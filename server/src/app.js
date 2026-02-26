@@ -86,6 +86,13 @@ export function createApp(config) {
         return;
       }
 
+      if (req.method === 'GET' && url.pathname === '/decisions') {
+        const status = url.searchParams.get('status');
+        const decisions = db.listDecisions({ status: status || undefined });
+        sendJson(res, 200, { decisions });
+        return;
+      }
+
       if (req.method === 'POST' && /^\/decisions\/[^/]+\/resolve$/.test(url.pathname)) {
         if (!requireBearer(req, res, config.token)) return;
         const body = await parseJsonBody(req, res);
