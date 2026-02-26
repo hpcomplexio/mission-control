@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mission-control.local/contracts/event-schema.json",
+  "$id": "mission-control/event-envelope/1.0.0",
   "title": "Mission Control Event Envelope",
   "type": "object",
   "required": [
@@ -17,11 +17,11 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+      "minLength": 1
     },
     "schemaVersion": {
       "type": "string",
-      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(?:\\+[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*)?$"
+      "const": "1.0.0"
     },
     "eventVersion": {
       "type": "integer",
@@ -64,7 +64,7 @@
     },
     "correlationId": {
       "type": "string",
-      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+      "minLength": 1
     },
     "agentId": {
       "type": "string"
