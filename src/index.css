@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+
+body {
+  background: #080a0f;
+  color: #c9d8e8;
+  font-family: 'JetBrains Mono', monospace;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #080a0f; }
+::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #00ff88; }
+
+.scanline {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ff8822, #00ff8844, #00ff8822, transparent);
+  animation: scan 6s linear infinite;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.glow-accent { box-shadow: 0 0 12px rgba(0, 255, 136, 0.3); }
+.glow-warn { box-shadow: 0 0 12px rgba(255, 107, 53, 0.3); }
+
+.agent-card {
+  transition: all 0.2s ease;
+  border: 1px solid #1a2332;
+}
+.agent-card:hover {
+  border-color: #00ff8844;
+  background: #0d1117ee;
+}
+
+.status-active { color: #00ff88; }
+.status-blocked { color: #ff6b35; }
+.status-idle { color: #4a6278; }
+.status-thinking { color: #60a5fa; }
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor::after {
+  content: '▋';
+  animation: cursor-blink 1s step-end infinite;
+  color: #00ff88;
+}
