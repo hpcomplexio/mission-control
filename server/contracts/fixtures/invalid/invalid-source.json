@@ -1,0 +1,11 @@
+{
+  "id": "018f8f77-ef52-7cc0-9a5b-2b0a4f9d5cbf",
+  "schemaVersion": "1.0.0",
+  "eventVersion": 1,
+  "source": "other-system",
+  "type": "agent.completed",
+  "severity": "info",
+  "timestamp": "2026-02-26T10:00:04.000Z",
+  "correlationId": "018f8f77-ff52-7cc0-9a5b-2b0a4f9d5cb0",
+  "payload": {}
+}
